@@ -10,14 +10,14 @@ spring:
     password: password
     url: jdbc:mysql://localhost:3306/budget?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
     driver-class-name: com.mysql.cj.jdbc.Driver
-  # redis缓存配置
-  redis:
-    host: localhost
-    port: 6379
-  # cache生命周期
-  cache:
-    redis:
-      time-to-live: 86400
+#  # redis缓存配置
+#  redis:
+#    host: localhost
+#    port: 6379
+#  # cache生命周期
+#  cache:
+#    redis:
+#      time-to-live: 86400
 
 # mybatis配置
 mybatis:
@@ -31,6 +31,14 @@ mybatis-plus:
     #在映射实体或者属性时，将数据库中表名和字段名中的下划线去掉，按照驼峰命名法映射
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      # 逻辑删除字段名
+      logic-delete-field: isDeleted
+      # 逻辑删除字面值：未删除为0
+      logic-not-delete-value: 0
+      # 逻辑删除字面值：删除为1
+      logic-delete-value: 1
 
 # slf4j日志配置
 logging:

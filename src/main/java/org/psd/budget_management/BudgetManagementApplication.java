@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * @author pengshidun
+ * @since 2024-11-11
  */
 @SpringBootApplication
 public class BudgetManagementApplication {
