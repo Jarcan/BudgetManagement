@@ -79,7 +79,7 @@ public class BudgetItemTypeController {
      * @return 删除结果
      */
     @DeleteMapping
-    public Result delete(@RequestParam("idList") List<Long> idList) {
+    public Result deleteByIds(@RequestParam("idList") List<Long> idList) {
         return new Result(200, "执行成功", this.budgetItemTypeService.removeByIds(idList));
     }
 }
