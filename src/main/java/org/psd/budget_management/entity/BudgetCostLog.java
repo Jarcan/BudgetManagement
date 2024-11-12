@@ -1,24 +1,22 @@
 package org.psd.budget_management.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
 /**
- * 预算科目日志
+ * 预算费用日志
  *
  * @author pengshidun
  * @TableName budget_item_log
  * @since 2024-11-12
  */
-@TableName(value = "budget_item_log")
+@TableName(value = "budget_cost_log")
 @Data
-public class BudgetItemLog implements Serializable {
+public class BudgetCostLog implements Serializable {
     /**
      * id
      */
@@ -26,10 +24,10 @@ public class BudgetItemLog implements Serializable {
     private Integer id;
 
     /**
-     * 预算科目id
+     * 预算费用id
      */
-    @TableField(value = "budget_item_id")
-    private Integer budgetItemId;
+    @TableField(value = "budget_cost_id")
+    private Integer budgetCostId;
 
     /**
      * 更新人姓名
