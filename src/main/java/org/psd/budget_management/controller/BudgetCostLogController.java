@@ -58,7 +58,7 @@ public class BudgetCostLogController {
      */
     @GetMapping("/findByBudgetCostId/{budgetCostId}")
     public Result findByBudgetCostId(@PathVariable Integer budgetCostId) {
-        return new Result(200, "执行成功", this.budgetCostLogService.getById(budgetCostId));
+        return new Result(200, "执行成功", this.budgetCostLogService.findByBudgetCostId(budgetCostId));
     }
 
     /**
