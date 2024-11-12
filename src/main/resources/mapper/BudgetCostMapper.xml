@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.psd.budget_management.mapper.BudgetCostMapper">
+
+    <resultMap id="BaseResultMap" type="org.psd.budget_management.entity.BudgetCost">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="code" column="code" jdbcType="VARCHAR"/>
+            <result property="type" column="type" jdbcType="VARCHAR"/>
+            <result property="source" column="source" jdbcType="VARCHAR"/>
+            <result property="year" column="year" jdbcType="INTEGER"/>
+            <result property="quarter" column="quarter" jdbcType="INTEGER"/>
+            <result property="month" column="month" jdbcType="INTEGER"/>
+            <result property="budgetItemId" column="budget_item_id" jdbcType="INTEGER"/>
+            <result property="organization" column="organization" jdbcType="VARCHAR"/>
+            <result property="channel" column="channel" jdbcType="VARCHAR"/>
+            <result property="customer" column="customer" jdbcType="VARCHAR"/>
+            <result property="store" column="store" jdbcType="VARCHAR"/>
+            <result property="productHierarchy" column="product_hierarchy" jdbcType="VARCHAR"/>
+            <result property="product" column="product" jdbcType="VARCHAR"/>
+            <result property="initialAmountCash" column="initial_amount_cash" jdbcType="DECIMAL"/>
+            <result property="availableBalanceAsh" column="available_balance_ash" jdbcType="DECIMAL"/>
+            <result property="initialAmountMaterial" column="initial_amount_material" jdbcType="DECIMAL"/>
+            <result property="availableBalanceMaterial" column="available_balance_material" jdbcType="DECIMAL"/>
+            <result property="note" column="note" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="INTEGER"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="isDeleted" column="is_deleted" jdbcType="INTEGER"/>
+    </resultMap>
+
+</mapper>

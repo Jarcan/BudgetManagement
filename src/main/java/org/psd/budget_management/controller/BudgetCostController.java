@@ -3,9 +3,9 @@ package org.psd.budget_management.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.psd.budget_management.entity.BudgetItem;
+import org.psd.budget_management.entity.BudgetCost;
 import org.psd.budget_management.entity.Result;
-import org.psd.budget_management.service.BudgetItemService;
+import org.psd.budget_management.service.BudgetCostService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -13,30 +13,30 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 预算科目(BudgetItem)表控制层
+ * 预算费用(BudgetCost)表控制层
  *
  * @author pengshidun
- * @since 2024-11-11
+ * @since 2024-11-12
  */
 @RestController
-@RequestMapping("budgetItem")
-public class BudgetItemController {
+@RequestMapping("budgetCost")
+public class BudgetCostController {
     /**
      * 服务对象
      */
     @Resource
-    private BudgetItemService budgetItemService;
+    private BudgetCostService budgetCostService;
 
     /**
      * 分页查询所有数据
      *
      * @param page       分页对象
-     * @param budgetItem 查询实体
+     * @param budgetCost 查询实体
      * @return 所有数据
      */
     @GetMapping
-    public Result findByPage(Page<BudgetItem> page, BudgetItem budgetItem) {
-        return new Result(200, "执行成功", this.budgetItemService.page(page, new QueryWrapper<>(budgetItem)));
+    public Result findByPage(Page<BudgetCost> page, BudgetCost budgetCost) {
+        return new Result(200, "执行成功", this.budgetCostService.page(page, new QueryWrapper<>(budgetCost)));
     }
 
     /**
@@ -47,29 +47,29 @@ public class BudgetItemController {
      */
     @GetMapping("{id}")
     public Result findById(@PathVariable Serializable id) {
-        return new Result(200, "执行成功", this.budgetItemService.getById(id));
+        return new Result(200, "执行成功", this.budgetCostService.getById(id));
     }
 
     /**
      * 新增数据
      *
-     * @param budgetItem 实体对象
+     * @param budgetCost 实体对象
      * @return 新增结果
      */
     @PostMapping
-    public Result insert(@RequestBody BudgetItem budgetItem) {
-        return new Result(200, "执行成功", this.budgetItemService.save(budgetItem));
+    public Result insert(@RequestBody BudgetCost budgetCost) {
+        return new Result(200, "执行成功", this.budgetCostService.save(budgetCost));
     }
 
     /**
      * 修改数据
      *
-     * @param budgetItem 实体对象
+     * @param budgetCost 实体对象
      * @return 修改结果
      */
     @PutMapping
-    public Result update(@RequestBody BudgetItem budgetItem) {
-        return new Result(200, "执行成功", this.budgetItemService.updateById(budgetItem));
+    public Result update(@RequestBody BudgetCost budgetCost) {
+        return new Result(200, "执行成功", this.budgetCostService.updateById(budgetCost));
     }
 
     /**
@@ -80,17 +80,17 @@ public class BudgetItemController {
      */
     @PutMapping("status")
     public Result updateStatus(@RequestParam("idList") List<Integer> idList, @RequestParam("status") Integer status) {
-        return new Result(200, "执行成功", this.budgetItemService.updateStatus(idList, status));
+        return new Result(200, "执行成功", this.budgetCostService.updateStatus(idList, status));
     }
 
     /**
-     * 批量删除数据
+     * 删除数据
      *
      * @param idList 主键结合
      * @return 删除结果
      */
     @DeleteMapping
     public Result deleteByIds(@RequestParam("idList") List<Integer> idList) {
-        return new Result(200, "执行成功", this.budgetItemService.removeByIds(idList));
+        return new Result(200, "执行成功", this.budgetCostService.removeByIds(idList));
     }
 }
