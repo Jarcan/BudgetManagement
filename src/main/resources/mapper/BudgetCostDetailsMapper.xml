@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.psd.budget_management.mapper.BudgetCostDetailsMapper">
+
+    <resultMap id="BaseResultMap" type="org.psd.budget_management.entity.BudgetCostDetails">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="operationType" column="operation_type" jdbcType="VARCHAR"/>
+            <result property="budgetCostCode" column="budget_cost_code" jdbcType="VARCHAR"/>
+            <result property="budgetItemName" column="budget_item_name" jdbcType="VARCHAR"/>
+            <result property="type" column="type" jdbcType="VARCHAR"/>
+            <result property="budgetCostOrganization" column="budget_cost_organization" jdbcType="VARCHAR"/>
+            <result property="budgetCostChannel" column="budget_cost_channel" jdbcType="VARCHAR"/>
+            <result property="budgetCostCustomer" column="budget_cost_customer" jdbcType="VARCHAR"/>
+            <result property="budgetCostStore" column="budget_cost_store" jdbcType="VARCHAR"/>
+            <result property="initialAmount" column="initial_amount" jdbcType="DECIMAL"/>
+            <result property="availableBalance" column="available_balance" jdbcType="DECIMAL"/>
+            <result property="amount" column="amount" jdbcType="DECIMAL"/>
+            <result property="availableBalanceAfter" column="available_balance_after" jdbcType="DECIMAL"/>
+            <result property="description" column="description" jdbcType="VARCHAR"/>
+            <result property="operationUser" column="operation_user" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="isDeleted" column="is_deleted" jdbcType="INTEGER"/>
+    </resultMap>
+
+</mapper>
