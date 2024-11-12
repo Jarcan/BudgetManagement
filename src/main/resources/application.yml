@@ -19,12 +19,6 @@ spring:
     redis:
       time-to-live: 86400
 
-# mybatis配置
-mybatis:
-  configuration:
-    #开启小驼峰
-    map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 # mybatisPlus配置
 mybatis-plus:
   configuration:
