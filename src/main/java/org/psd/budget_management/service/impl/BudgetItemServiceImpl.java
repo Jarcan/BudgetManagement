@@ -5,8 +5,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.psd.budget_management.entity.BudgetItem;
 import org.psd.budget_management.entity.BudgetItemGroup;
+import org.psd.budget_management.entity.BudgetItemLog;
 import org.psd.budget_management.entity.BudgetItemType;
 import org.psd.budget_management.service.BudgetItemGroupService;
+import org.psd.budget_management.service.BudgetItemLogService;
 import org.psd.budget_management.service.BudgetItemService;
 import org.psd.budget_management.mapper.BudgetItemMapper;
 import org.psd.budget_management.service.BudgetItemTypeService;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +32,8 @@ public class BudgetItemServiceImpl extends ServiceImpl<BudgetItemMapper, BudgetI
     private BudgetItemTypeService budgetItemTypeService;
     @Resource
     private BudgetItemGroupService budgetItemGroupService;
+    @Resource
+    private BudgetItemLogService budgetItemLogService;
 
     /**
      * 重写page方法，查询出类型名称、组名称
@@ -61,7 +66,7 @@ public class BudgetItemServiceImpl extends ServiceImpl<BudgetItemMapper, BudgetI
     }
 
     /**
-     * 重写save方法，添加科目编码
+     * 重写save方法，添加科目编码和状态
      *
      * @param entity BudgetItem
      * @return 是否成功
@@ -72,7 +77,17 @@ public class BudgetItemServiceImpl extends ServiceImpl<BudgetItemMapper, BudgetI
         if (result) {
             // 添加科目编码，前两位为YS，后四位为自增id
             entity.setCode("YS" + String.format("%04d", entity.getId()));
-            result = super.updateById(entity);
+            entity.setStatus(1);
+            super.updateById(entity);
+            // 添加日志到日志表
+            BudgetItemLog budgetItemLog = new BudgetItemLog();
+            budgetItemLog.setBudgetItemId(entity.getId());
+            budgetItemLog.setUpdateUser("张三");
+            budgetItemLog.setUpdatePosition("主管");
+            // 设置日志操作类型和内容
+            budgetItemLog.setActionType("新增");
+            budgetItemLog.setContent("新增预算科目: " + entity.getName() + ", 编码: " + entity.getCode() + ", 状态: " + entity.getStatus());
+            budgetItemLogService.save(budgetItemLog);
         }
         return result;
     }
@@ -94,8 +109,80 @@ public class BudgetItemServiceImpl extends ServiceImpl<BudgetItemMapper, BudgetI
             budgetItem.setStatus(status);
             // 调用父类的更新方法，根据ID更新数据库中的预算项记录
             super.updateById(budgetItem);
+            // 添加日志到日志表
+            BudgetItemLog budgetItemLog = new BudgetItemLog();
+            budgetItemLog.setBudgetItemId(id);
+            budgetItemLog.setUpdateUser("张三");
+            budgetItemLog.setUpdatePosition("主管");
+            // 根据状态设置日志操作类型和内容
+            if (1 == status) {
+                budgetItemLog.setActionType("启用");
+                budgetItemLog.setContent("启用预算科目");
+            } else {
+                budgetItemLog.setActionType("禁用");
+                budgetItemLog.setContent("禁用预算科目");
+            }
+            budgetItemLogService.save(budgetItemLog);
         }
         return true;
+    }
+
+    /**
+     * 重写updateById方法，添加日志
+     *
+     * @param entity BudgetItem
+     * @return 修改结果
+     */
+    @Override
+    public boolean updateById(BudgetItem entity) {
+        // 获取原始的BudgetItem对象
+        BudgetItem originalBudgetItem = super.getById(entity.getId());
+        boolean result = super.updateById(entity);
+        if (result) {
+            // 添加日志到日志表
+            BudgetItemLog budgetItemLog = new BudgetItemLog();
+            budgetItemLog.setBudgetItemId(entity.getId());
+            budgetItemLog.setUpdateUser("张三");
+            budgetItemLog.setUpdatePosition("主管");
+            // 设置日志操作类型
+            budgetItemLog.setActionType("编辑");
+            // 构建日志内容
+            entity = super.getById(entity.getId());
+            String content = "编辑预算科目: " + entity.getName() + "\n" +
+                    "原内容: \n" +
+                    "  名称: " + originalBudgetItem.getName() + "\n" +
+                    "  编码: " + originalBudgetItem.getCode() + "\n" +
+                    "  状态: " + originalBudgetItem.getStatus() + "\n" +
+                    "编辑后内容: \n" +
+                    "  名称: " + entity.getName() + "\n" +
+                    "  编码: " + entity.getCode() + "\n" +
+                    "  状态: " + entity.getStatus() + "\n";
+            budgetItemLog.setContent(content);
+            budgetItemLogService.save(budgetItemLog);
+        }
+        return result;
+    }
+
+    /**
+     * 重写removeByIds方法，添加删除日志
+     *
+     * @param list 需要删除的预算科目ids
+     * @return 删除结果
+     */
+    @Override
+    public boolean removeByIds(Collection<?> list) {
+        // 添加日志到日志表
+        for (Object id : list) {
+            BudgetItem budgetItem = super.getById((Integer) id);
+            BudgetItemLog budgetItemLog = new BudgetItemLog();
+            budgetItemLog.setBudgetItemId(budgetItem.getId());
+            budgetItemLog.setUpdateUser("张三");
+            budgetItemLog.setUpdatePosition("主管");
+            budgetItemLog.setActionType("删除");
+            budgetItemLog.setContent("删除预算科目: " + budgetItem.getName() + ", 编码: " + budgetItem.getCode() + ", 状态: " + budgetItem.getStatus());
+            budgetItemLogService.save(budgetItemLog);
+        }
+        return super.removeByIds(list);
     }
 
     /**
