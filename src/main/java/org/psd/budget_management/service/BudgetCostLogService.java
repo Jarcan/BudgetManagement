@@ -19,5 +19,5 @@ public interface BudgetCostLogService extends IService<BudgetCostLog> {
      * @param budgetCostId 预算科目id
      * @return 返回该预算科目的所有日志
      */
-    public List<BudgetCostLog> findByBudgetCostId(Integer budgetCostId);
+    List<BudgetCostLog> findByBudgetCostId(Integer budgetCostId);
 }

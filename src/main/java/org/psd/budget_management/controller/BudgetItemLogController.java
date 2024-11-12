@@ -58,7 +58,7 @@ public class BudgetItemLogController {
      */
     @GetMapping("/findByBudgetItemId/{budgetItemId}")
     public Result findByBudgetItemId(@PathVariable Integer budgetItemId) {
-        return new Result(200, "执行成功", this.budgetItemLogService.getById(budgetItemId));
+        return new Result(200, "执行成功", this.budgetItemLogService.findByBudgetItemId(budgetItemId));
     }
 
     /**
