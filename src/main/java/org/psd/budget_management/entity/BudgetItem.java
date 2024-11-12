@@ -63,7 +63,7 @@ public class BudgetItem implements Serializable {
     /**
      * 状态
      */
-    @TableField(value = "status", fill = FieldFill.INSERT)
+    @TableField(value = "status")
     private Integer status;
 
     /**
