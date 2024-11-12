@@ -112,8 +112,8 @@ public class BudgetCost implements Serializable {
     /**
      * 可用余额（现金）
      */
-    @TableField(value = "available_balance_ash")
-    private BigDecimal availableBalanceAsh;
+    @TableField(value = "available_balance_cash")
+    private BigDecimal availableBalanceCash;
 
     /**
      * 期初金额（物料）

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.psd.budget_management.entity.BudgetCost;
 import org.psd.budget_management.entity.BudgetCostLog;
 import org.psd.budget_management.entity.BudgetItem;
+import org.psd.budget_management.entity.Result;
 import org.psd.budget_management.service.BudgetCostLogService;
 import org.psd.budget_management.service.BudgetCostService;
 import org.psd.budget_management.mapper.BudgetCostMapper;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -150,6 +152,148 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
             budgetCostLogService.save(budgetCostLog);
         }
         return true;
+    }
+
+    /**
+     * 修改预算费用金额
+     *
+     * @param budgetCostId   预算费用ID
+     * @param budgetCostType 预算费用类型，决定使用哪种预算变更处理逻辑
+     * @param changeType     变更类型，可以是"追加"或"削减"
+     * @param amount         变更金额，必须是非负数
+     * @param description    变更描述，解释变更的原因或目的
+     * @return 结果对象，包含状态码、消息和成功标志
+     */
+    @Override
+    public Result changeBudgetCost(Integer budgetCostId, String budgetCostType, String changeType, BigDecimal amount, String description) {
+        // 检查变更金额是否为负数
+        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+            return new Result(400, "金额不能为负数", false);
+        }
+        // 根据ID获取预算费用对象
+        BudgetCost budgetCost = this.getById(budgetCostId);
+        if (budgetCost == null) {
+            return new Result(404, "预算费用不存在", false);
+        }
+        // 尝试执行预算费用变更
+        try {
+            // 根据预算类型调用相应的方法
+            switch (budgetCostType) {
+                case "现金预算":
+                    handleCashBudgetChange(budgetCost, changeType, amount);
+                    break;
+                case "物料预算":
+                    handleMaterialBudgetChange(budgetCost, changeType, amount);
+                    break;
+                default:
+                    return new Result(400, "不支持的预算类型", false);
+            }
+            // 更新预算费用记录
+            this.updateById(budgetCost);
+            return new Result(200, "预算费用变更成功", true);
+        } catch (IllegalArgumentException e) {
+            return new Result(400, e.getMessage(), false);
+        }
+    }
+
+    /**
+     * 调整预算费用金额到另一个预算费用
+     *
+     * @param budgetCostId       预算费用ID，用于标识特定的预算费用记录
+     * @param targetBudgetCostId 目标预算费用ID，用于关联调整操作的预算费用
+     * @param budgetCostType     预算费用类型，描述费用的类别
+     * @param amount             调整金额，要增加或减少的具体金额
+     * @param description        描述，对此次调整的详细说明
+     * @return 调整操作的结果，包括是否成功以及相关的消息
+     */
+    @Override
+    public Result adjust(Integer budgetCostId, Integer targetBudgetCostId, String budgetCostType, BigDecimal amount, String description) {
+        // 输入验证
+        if (budgetCostId == null || targetBudgetCostId == null || budgetCostType == null || amount == null) {
+            return new Result(400, "输入参数不能为空", false);
+        }
+        // 检查变更金额是否为负数
+        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+            return new Result(400, "金额不能为负数", false);
+        }
+        // 根据ID获取预算费用对象和目标对象
+        BudgetCost budgetCost = this.getById(budgetCostId);
+        BudgetCost targetBudgetCost = this.getById(targetBudgetCostId);
+        if (budgetCost == null || targetBudgetCost == null) {
+            return new Result(404, "预算费用或目标预算费用不存在", false);
+        }
+        // 尝试进行预算费用调整
+        try {
+            // 根据预算类型调用相应的方法
+            switch (budgetCostType) {
+                case "现金预算":
+                    handleCashBudgetChange(budgetCost, "削减", amount);
+                    handleCashBudgetChange(targetBudgetCost, "追加", amount);
+                    break;
+                case "物料预算":
+                    handleMaterialBudgetChange(budgetCost, "削减", amount);
+                    handleMaterialBudgetChange(targetBudgetCost, "追加", amount);
+                    break;
+                default:
+                    return new Result(400, "不支持的预算类型", false);
+            }
+            // 更新预算费用记录
+            this.updateById(budgetCost);
+            this.updateById(targetBudgetCost);
+            return new Result(200, "预算费用调整成功", true);
+        } catch (IllegalArgumentException e) {
+            return new Result(400, e.getMessage(), false);
+        } catch (Exception e) {
+            return new Result(500, "系统错误: " + e.getMessage(), false);
+        }
+    }
+
+    /**
+     * 处理现金预算的变更
+     *
+     * @param budgetCost 预算费用对象
+     * @param changeType 变更类型，可以是"追加"或"削减"
+     * @param amount     变更金额
+     * @throws IllegalArgumentException 如果变更类型不支持或预算费用不足
+     */
+    private void handleCashBudgetChange(BudgetCost budgetCost, String changeType, BigDecimal amount) {
+        switch (changeType) {
+            case "追加":
+                budgetCost.setAvailableBalanceCash(budgetCost.getAvailableBalanceCash().add(amount));
+                break;
+            case "削减":
+                if (budgetCost.getAvailableBalanceCash().compareTo(amount) < 0) {
+                    throw new IllegalArgumentException("预算费用不足");
+                }
+                budgetCost.setAvailableBalanceCash(budgetCost.getAvailableBalanceCash().subtract(amount));
+                break;
+            default:
+                throw new IllegalArgumentException("不支持的变更类型");
+        }
+    }
+
+    /**
+     * 处理物料预算的变更
+     *
+     * @param budgetCost 预算费用对象
+     * @param changeType 变更类型，可以是"追加"或"削减"
+     * @param amount     变更金额
+     * @throws IllegalArgumentException 如果变更类型不支持或预算费用不足
+     */
+    private void handleMaterialBudgetChange(BudgetCost budgetCost, String changeType, BigDecimal amount) {
+        switch (changeType) {
+            case "追加":
+                budgetCost.setAvailableBalanceMaterial(budgetCost.getAvailableBalanceMaterial().add(amount));
+                break;
+            case "削减":
+                if (budgetCost.getAvailableBalanceMaterial().compareTo(amount) < 0) {
+                    throw new IllegalArgumentException("预算费用不足");
+                }
+                budgetCost.setAvailableBalanceMaterial(budgetCost.getAvailableBalanceMaterial().subtract(amount));
+                break;
+            default:
+                throw new IllegalArgumentException("不支持的变更类型");
+        }
     }
 
     /**

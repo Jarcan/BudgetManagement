@@ -20,7 +20,7 @@
             <result property="productHierarchy" column="product_hierarchy" jdbcType="VARCHAR"/>
             <result property="product" column="product" jdbcType="VARCHAR"/>
             <result property="initialAmountCash" column="initial_amount_cash" jdbcType="DECIMAL"/>
-            <result property="availableBalanceAsh" column="available_balance_ash" jdbcType="DECIMAL"/>
+            <result property="availableBalanceCash" column="available_balance_ash" jdbcType="DECIMAL"/>
             <result property="initialAmountMaterial" column="initial_amount_material" jdbcType="DECIMAL"/>
             <result property="availableBalanceMaterial" column="available_balance_material" jdbcType="DECIMAL"/>
             <result property="note" column="note" jdbcType="VARCHAR"/>
