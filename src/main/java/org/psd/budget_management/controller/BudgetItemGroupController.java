@@ -2,8 +2,6 @@ package org.psd.budget_management.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.api.ApiController;
-import com.baomidou.mybatisplus.extension.api.R;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.psd.budget_management.entity.BudgetItemGroup;
 import org.psd.budget_management.entity.Result;
@@ -22,7 +20,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("budgetItemGroup")
-public class BudgetItemGroupController extends ApiController {
+public class BudgetItemGroupController {
     /**
      * 服务对象
      */
@@ -38,7 +36,8 @@ public class BudgetItemGroupController extends ApiController {
      */
     @GetMapping
     public Result findByPage(Page<BudgetItemGroup> page, BudgetItemGroup budgetItemGroup) {
-        return new Result(200, "执行成功", this.budgetItemGroupService.page(page, new QueryWrapper<>(budgetItemGroup)));
+        Page<BudgetItemGroup> page1 = this.budgetItemGroupService.page(page, new QueryWrapper<>(budgetItemGroup));
+        return new Result(200, "执行成功", page1);
     }
 
     /**
@@ -75,13 +74,13 @@ public class BudgetItemGroupController extends ApiController {
     }
 
     /**
-     * 删除数据
+     * 批量删除数据
      *
      * @param idList 主键结合
      * @return 删除结果
      */
     @DeleteMapping
-    public Result deleteByIds(@RequestParam("idList") List<Long> idList) {
+    public Result deleteByIds(@RequestParam("idList") List<Integer> idList) {
         return new Result(200, "执行成功", this.budgetItemGroupService.removeByIds(idList));
     }
 }

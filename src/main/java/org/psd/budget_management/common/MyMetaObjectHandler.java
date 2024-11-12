@@ -32,6 +32,8 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         metaObject.setValue("updateTime", LocalDateTime.now());
         // 填充是否删除
         metaObject.setValue("isDeleted", 0);
+        // 填充状态
+        metaObject.setValue("status", 1);
     }
 
     /**
