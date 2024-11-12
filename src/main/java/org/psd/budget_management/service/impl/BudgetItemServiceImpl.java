@@ -86,7 +86,36 @@ public class BudgetItemServiceImpl extends ServiceImpl<BudgetItemMapper, BudgetI
             budgetItemLog.setUpdatePosition("主管");
             // 设置日志操作类型和内容
             budgetItemLog.setActionType("新增");
-            budgetItemLog.setContent("新增预算科目: " + entity.getName() + ", 编码: " + entity.getCode() + ", 状态: " + entity.getStatus());
+            budgetItemLog.setContent("新增预算科目: " + this.getById(entity.getId()));
+            budgetItemLogService.save(budgetItemLog);
+        }
+        return result;
+    }
+
+    /**
+     * 重写updateById方法，添加日志
+     *
+     * @param entity BudgetItem
+     * @return 修改结果
+     */
+    @Override
+    public boolean updateById(BudgetItem entity) {
+        // 获取原始的BudgetItem对象
+        BudgetItem originalBudgetItem = this.getById(entity.getId());
+        boolean result = super.updateById(entity);
+        if (result) {
+            // 添加日志到日志表
+            BudgetItemLog budgetItemLog = new BudgetItemLog();
+            budgetItemLog.setBudgetItemId(entity.getId());
+            budgetItemLog.setUpdateUser("张三");
+            budgetItemLog.setUpdatePosition("主管");
+            // 设置日志操作类型
+            budgetItemLog.setActionType("编辑");
+            // 构建日志内容
+            entity = this.getById(entity.getId());
+            String content = "原内容: " + originalBudgetItem + "\n" +
+                    "编辑后内容: " + entity;
+            budgetItemLog.setContent(content);
             budgetItemLogService.save(budgetItemLog);
         }
         return result;
@@ -128,42 +157,6 @@ public class BudgetItemServiceImpl extends ServiceImpl<BudgetItemMapper, BudgetI
     }
 
     /**
-     * 重写updateById方法，添加日志
-     *
-     * @param entity BudgetItem
-     * @return 修改结果
-     */
-    @Override
-    public boolean updateById(BudgetItem entity) {
-        // 获取原始的BudgetItem对象
-        BudgetItem originalBudgetItem = super.getById(entity.getId());
-        boolean result = super.updateById(entity);
-        if (result) {
-            // 添加日志到日志表
-            BudgetItemLog budgetItemLog = new BudgetItemLog();
-            budgetItemLog.setBudgetItemId(entity.getId());
-            budgetItemLog.setUpdateUser("张三");
-            budgetItemLog.setUpdatePosition("主管");
-            // 设置日志操作类型
-            budgetItemLog.setActionType("编辑");
-            // 构建日志内容
-            entity = super.getById(entity.getId());
-            String content = "编辑预算科目: " + entity.getName() + "\n" +
-                    "原内容: \n" +
-                    "  名称: " + originalBudgetItem.getName() + "\n" +
-                    "  编码: " + originalBudgetItem.getCode() + "\n" +
-                    "  状态: " + originalBudgetItem.getStatus() + "\n" +
-                    "编辑后内容: \n" +
-                    "  名称: " + entity.getName() + "\n" +
-                    "  编码: " + entity.getCode() + "\n" +
-                    "  状态: " + entity.getStatus() + "\n";
-            budgetItemLog.setContent(content);
-            budgetItemLogService.save(budgetItemLog);
-        }
-        return result;
-    }
-
-    /**
      * 重写removeByIds方法，添加删除日志
      *
      * @param list 需要删除的预算科目ids
@@ -173,13 +166,13 @@ public class BudgetItemServiceImpl extends ServiceImpl<BudgetItemMapper, BudgetI
     public boolean removeByIds(Collection<?> list) {
         // 添加日志到日志表
         for (Object id : list) {
-            BudgetItem budgetItem = super.getById((Integer) id);
+            BudgetItem budgetItem = this.getById((Integer) id);
             BudgetItemLog budgetItemLog = new BudgetItemLog();
             budgetItemLog.setBudgetItemId(budgetItem.getId());
             budgetItemLog.setUpdateUser("张三");
             budgetItemLog.setUpdatePosition("主管");
             budgetItemLog.setActionType("删除");
-            budgetItemLog.setContent("删除预算科目: " + budgetItem.getName() + ", 编码: " + budgetItem.getCode() + ", 状态: " + budgetItem.getStatus());
+            budgetItemLog.setContent("删除预算科目: " + budgetItem);
             budgetItemLogService.save(budgetItemLog);
         }
         return super.removeByIds(list);
