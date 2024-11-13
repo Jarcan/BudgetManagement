@@ -51,6 +51,17 @@ public class BudgetCostDetailsController {
     }
 
     /**
+     * 通过预算费用id查询数据
+     *
+     * @param budgetCostId 预算费用id
+     * @return 返回该预算费用的所有明细
+     */
+    @GetMapping("/findByBudgetCostId/{budgetCostId}")
+    public Result findByBudgetCostId(@PathVariable Integer budgetCostId) {
+        return new Result(200, "执行成功", this.budgetCostDetailsService.findByBudgetCostId(budgetCostId));
+    }
+
+    /**
      * 新增数据
      *
      * @param budgetCostDetails 实体对象
