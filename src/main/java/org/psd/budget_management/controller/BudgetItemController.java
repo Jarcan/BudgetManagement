@@ -9,6 +9,7 @@ import org.psd.budget_management.service.BudgetItemService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.io.Serializable;
 import java.util.List;
 
@@ -57,7 +58,7 @@ public class BudgetItemController {
      * @return 新增结果
      */
     @PostMapping
-    public Result insert(@RequestBody BudgetItem budgetItem) {
+    public Result insert(@Valid @RequestBody BudgetItem budgetItem) {
         return new Result(200, "执行成功", this.budgetItemService.save(budgetItem));
     }
 

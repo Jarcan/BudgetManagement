@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 /**
  * 预算费用
  *
@@ -47,24 +51,33 @@ public class BudgetCost implements Serializable {
      * 年份
      */
     @TableField(value = "year")
+    @NotNull(message = "年份不能为空")
+    @Min(value = 0, message = "年份不能小于0")
     private Integer year;
 
     /**
      * 季度
      */
     @TableField(value = "quarter")
+    @NotNull(message = "季度不能为空")
+    @Min(value = 1, message = "季度不能小于1")
+    @Max(value = 4, message = "季度不能大于4")
     private Integer quarter;
 
     /**
      * 月份
      */
     @TableField(value = "month")
+    @NotNull(message = "月份不能为空")
+    @Min(value = 1, message = "月份不能小于1")
+    @Max(value = 12, message = "月份不能大于4")
     private Integer month;
 
     /**
      * 预算科目id
      */
     @TableField(value = "budget_item_id")
+    @NotNull(message = "预算科目不能为空")
     private Integer budgetItemId;
 
     /**

@@ -9,6 +9,7 @@ import org.psd.budget_management.service.BudgetCostService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
@@ -58,7 +59,7 @@ public class BudgetCostController {
      * @return 新增结果
      */
     @PostMapping
-    public Result insert(@RequestBody BudgetCost budgetCost) {
+    public Result insert(@Valid @RequestBody BudgetCost budgetCost) {
         return new Result(200, "执行成功", this.budgetCostService.save(budgetCost));
     }
 
