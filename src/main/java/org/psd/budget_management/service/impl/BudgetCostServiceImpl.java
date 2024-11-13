@@ -3,10 +3,8 @@ package org.psd.budget_management.service.impl;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.psd.budget_management.entity.BudgetCost;
-import org.psd.budget_management.entity.BudgetCostLog;
-import org.psd.budget_management.entity.BudgetItem;
-import org.psd.budget_management.entity.Result;
+import org.psd.budget_management.entity.*;
+import org.psd.budget_management.service.BudgetCostDetailsService;
 import org.psd.budget_management.service.BudgetCostLogService;
 import org.psd.budget_management.service.BudgetCostService;
 import org.psd.budget_management.mapper.BudgetCostMapper;
@@ -32,6 +30,8 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
     private BudgetItemService budgetItemService;
     @Resource
     private BudgetCostLogService budgetCostLogService;
+    @Resource
+    private BudgetCostDetailsService budgetCostDetailsService;
 
     /**
      * 重写page方法，查出其他数据（预算科目编码、预算科目名称等）
@@ -76,7 +76,12 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
             // 添加预算费用编码，前两位为SRYS，后四位为自增id
             entity.setCode("SRYS" + String.format("%04d", entity.getId()));
             entity.setStatus(1);
+            // 设置余额
+            entity.setAvailableBalanceCash(entity.getInitialAmountCash() != null ? entity.getInitialAmountCash() : BigDecimal.ZERO);
+            entity.setAvailableBalanceMaterial(entity.getInitialAmountMaterial() != null ? entity.getInitialAmountMaterial() : BigDecimal.ZERO);
             super.updateById(entity);
+            // 获取最新的BudgetCost对象
+            entity = this.getById(entity);
             // 添加日志到日志表
             BudgetCostLog budgetCostLog = new BudgetCostLog();
             budgetCostLog.setBudgetCostId(entity.getId());
@@ -86,8 +91,75 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
             budgetCostLog.setActionType("新增");
             budgetCostLog.setContent("新增预算费用: " + this.getById(entity.getId()));
             budgetCostLogService.save(budgetCostLog);
+            // 添加明细到明细表
+            if (entity.getInitialAmountCash() != null) {
+                entity.setAvailableBalanceCash(BigDecimal.ZERO);
+                addBudgetCostDetails(entity, "期初", "管理员", "追加", entity.getInitialAmountCash(), "现金", null);
+            }
+            if (entity.getInitialAmountMaterial() != null) {
+                entity.setAvailableBalanceMaterial(BigDecimal.ZERO);
+                addBudgetCostDetails(entity, "期初", "管理员", "追加", entity.getInitialAmountMaterial(), "物料", null);
+            }
         }
         return result;
+    }
+
+    /**
+     * 添加一条预算费用明细
+     *
+     * @param budgetCost    BudgetCost预算费用实体
+     * @param operationType 操作类型
+     * @param operationUser 操作人
+     * @param operation     操作
+     * @param amount        金额
+     * @param type          类型（现金、物料）
+     */
+    private void addBudgetCostDetails(BudgetCost budgetCost, String operationType, String operationUser, String operation, BigDecimal amount, String type, String description) {
+        // 设置基本明细信息
+        BudgetCostDetails budgetCostDetails = new BudgetCostDetails();
+        budgetCostDetails.setOperationType(operationType);
+        budgetCostDetails.setBudgetCostCode(budgetCost.getCode());
+        budgetCostDetails.setBudgetItemName(budgetCost.getBudgetItemName());
+        budgetCostDetails.setBudgetCostOrganization(budgetCost.getOrganization());
+        budgetCostDetails.setBudgetCostChannel(budgetCost.getChannel());
+        budgetCostDetails.setBudgetCostCustomer(budgetCost.getCustomer());
+        budgetCostDetails.setBudgetCostStore(budgetCost.getStore());
+        budgetCostDetails.setOperationUser(operationUser);
+        budgetCostDetails.setDescription(description);
+        // 设置金额类型、期初金额、操作前余额、操作金额、操作后余额
+        if ("现金".equals(type)) {
+            if ("追加".equals(operation)) {
+                setBudgetCostDetails(budgetCostDetails, type, budgetCost.getInitialAmountCash(), budgetCost.getAvailableBalanceCash(), amount, budgetCost.getAvailableBalanceCash().add(amount));
+            } else {
+                setBudgetCostDetails(budgetCostDetails, type, budgetCost.getInitialAmountCash(), budgetCost.getAvailableBalanceCash(), amount, budgetCost.getAvailableBalanceCash().subtract(amount));
+            }
+        } else if ("物料".equals(type)) {
+            if ("追加".equals(operation)) {
+                setBudgetCostDetails(budgetCostDetails, type, budgetCost.getInitialAmountMaterial(), budgetCost.getAvailableBalanceMaterial(), amount, budgetCost.getAvailableBalanceMaterial().add(amount));
+            } else {
+                setBudgetCostDetails(budgetCostDetails, type, budgetCost.getInitialAmountMaterial(), budgetCost.getAvailableBalanceMaterial(), amount, budgetCost.getAvailableBalanceMaterial().subtract(amount));
+            }
+        }
+        // 添加费用预算明细到数据库
+        budgetCostDetailsService.save(budgetCostDetails);
+    }
+
+    /**
+     * 设置金额类型、期初金额、操作前余额、操作金额、操作后余额
+     *
+     * @param budgetCostDetails     BudgetCostDetails明细实体
+     * @param type                  金额类型
+     * @param initialAmount         期初金额
+     * @param availableBalance      操作前余额
+     * @param amount                操作金额
+     * @param availableBalanceAfter 操作后余额
+     */
+    private void setBudgetCostDetails(BudgetCostDetails budgetCostDetails, String type, BigDecimal initialAmount, BigDecimal availableBalance, BigDecimal amount, BigDecimal availableBalanceAfter) {
+        budgetCostDetails.setType(type);
+        budgetCostDetails.setInitialAmount(initialAmount);
+        budgetCostDetails.setAvailableBalance(availableBalance);
+        budgetCostDetails.setAmount(amount);
+        budgetCostDetails.setAvailableBalanceAfter(availableBalanceAfter);
     }
 
     /**
@@ -111,8 +183,7 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
             budgetCostLog.setActionType("编辑");
             // 构建日志内容
             entity = this.getById(entity.getId());
-            String content = "原内容: " + originalBudgetCost + "\n" +
-                    "编辑后内容: " + entity;
+            String content = "原内容: " + originalBudgetCost + "\n" + "编辑后内容: " + entity;
             budgetCostLog.setContent(content);
             budgetCostLogService.save(budgetCostLog);
         }
@@ -179,11 +250,11 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
         try {
             // 根据预算类型调用相应的方法
             switch (budgetCostType) {
-                case "现金预算":
-                    handleCashBudgetChange(budgetCost, changeType, amount);
+                case "现金":
+                    handleCashBudgetChange(budgetCost, changeType, amount, changeType, description);
                     break;
-                case "物料预算":
-                    handleMaterialBudgetChange(budgetCost, changeType, amount);
+                case "物料":
+                    handleMaterialBudgetChange(budgetCost, changeType, amount, changeType, description);
                     break;
                 default:
                     return new Result(400, "不支持的预算类型", false);
@@ -226,13 +297,13 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
         try {
             // 根据预算类型调用相应的方法
             switch (budgetCostType) {
-                case "现金预算":
-                    handleCashBudgetChange(budgetCost, "削减", amount);
-                    handleCashBudgetChange(targetBudgetCost, "追加", amount);
+                case "现金":
+                    handleCashBudgetChange(budgetCost, "削减", amount, "调出", description);
+                    handleCashBudgetChange(targetBudgetCost, "追加", amount, "调入", description);
                     break;
-                case "物料预算":
-                    handleMaterialBudgetChange(budgetCost, "削减", amount);
-                    handleMaterialBudgetChange(targetBudgetCost, "追加", amount);
+                case "物料":
+                    handleMaterialBudgetChange(budgetCost, "削减", amount, "调出", description);
+                    handleMaterialBudgetChange(targetBudgetCost, "追加", amount, "调入", description);
                     break;
                 default:
                     return new Result(400, "不支持的预算类型", false);
@@ -256,15 +327,17 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
      * @param amount     变更金额
      * @throws IllegalArgumentException 如果变更类型不支持或预算费用不足
      */
-    private void handleCashBudgetChange(BudgetCost budgetCost, String changeType, BigDecimal amount) {
+    private void handleCashBudgetChange(BudgetCost budgetCost, String changeType, BigDecimal amount, String operationType, String description) {
         switch (changeType) {
             case "追加":
+                addBudgetCostDetails(budgetCost, operationType, "管理员", "追加", amount, "现金", description);
                 budgetCost.setAvailableBalanceCash(budgetCost.getAvailableBalanceCash().add(amount));
                 break;
             case "削减":
                 if (budgetCost.getAvailableBalanceCash().compareTo(amount) < 0) {
                     throw new IllegalArgumentException("预算费用不足");
                 }
+                addBudgetCostDetails(budgetCost, operationType, "管理员", "削减", amount, "现金", description);
                 budgetCost.setAvailableBalanceCash(budgetCost.getAvailableBalanceCash().subtract(amount));
                 break;
             default:
@@ -280,15 +353,17 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
      * @param amount     变更金额
      * @throws IllegalArgumentException 如果变更类型不支持或预算费用不足
      */
-    private void handleMaterialBudgetChange(BudgetCost budgetCost, String changeType, BigDecimal amount) {
+    private void handleMaterialBudgetChange(BudgetCost budgetCost, String changeType, BigDecimal amount, String operationType, String description) {
         switch (changeType) {
             case "追加":
+                addBudgetCostDetails(budgetCost, operationType, "管理员", "追加", amount, "物料", description);
                 budgetCost.setAvailableBalanceMaterial(budgetCost.getAvailableBalanceMaterial().add(amount));
                 break;
             case "削减":
                 if (budgetCost.getAvailableBalanceMaterial().compareTo(amount) < 0) {
                     throw new IllegalArgumentException("预算费用不足");
                 }
+                addBudgetCostDetails(budgetCost, operationType, "管理员", "削减", amount, "物料", description);
                 budgetCost.setAvailableBalanceMaterial(budgetCost.getAvailableBalanceMaterial().subtract(amount));
                 break;
             default:
@@ -333,4 +408,5 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
         }
         return budgetCost;
     }
+
 }
