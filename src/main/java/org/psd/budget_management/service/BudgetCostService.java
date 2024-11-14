@@ -14,6 +14,15 @@ import java.util.List;
  * @since 2024-11-12
  */
 public interface BudgetCostService extends IService<BudgetCost> {
+
+    /**
+     * 重写save方法，添加预算费用编码和状态
+     *
+     * @param entity BudgetCost
+     * @return 是否成功
+     */
+    Result create(BudgetCost entity);
+
     /**
      * 批量修改预算费用的状态
      *

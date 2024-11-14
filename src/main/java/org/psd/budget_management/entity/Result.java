@@ -48,10 +48,24 @@ public class Result {
      * @param message 失败信息
      * @return 返回的结果
      */
-    public static Result error(String message) {
+    public static Result fail(String message) {
         Result result = new Result();
         result.message = message;
         result.code = 400;
+        result.data = null;
+        return result;
+    }
+
+    /**
+     * 返回错误
+     *
+     * @param message 错误信息
+     * @return 返回的结果
+     */
+    public static Result error(String message) {
+        Result result = new Result();
+        result.message = message;
+        result.code = 500;
         result.data = null;
         return result;
     }

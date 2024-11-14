@@ -19,7 +19,7 @@ class BudgetItemTypeControllerTest {
     void testInsert() {
         BudgetItemType budgetItemType = new BudgetItemType();
         budgetItemType.setName("营销费用");
-        System.out.println(budgetItemTypeController.insert(budgetItemType));
+        System.out.println(budgetItemTypeController.create(budgetItemType));
     }
 
     @Test

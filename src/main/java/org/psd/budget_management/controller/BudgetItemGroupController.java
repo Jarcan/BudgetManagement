@@ -34,10 +34,10 @@ public class BudgetItemGroupController {
      * @param budgetItemGroup 查询实体
      * @return 所有数据
      */
-    @GetMapping
-    public Result findByPage(Page<BudgetItemGroup> page, BudgetItemGroup budgetItemGroup) {
+    @GetMapping("findByConditions")
+    public Result findByConditions(Page<BudgetItemGroup> page, BudgetItemGroup budgetItemGroup) {
         Page<BudgetItemGroup> page1 = this.budgetItemGroupService.page(page, new QueryWrapper<>(budgetItemGroup));
-        return new Result(200, "执行成功", page1);
+        return Result.success(page1);
     }
 
     /**
@@ -48,7 +48,7 @@ public class BudgetItemGroupController {
      */
     @GetMapping("{id}")
     public Result findById(@PathVariable Serializable id) {
-        return new Result(200, "执行成功", this.budgetItemGroupService.getById(id));
+        return Result.success(this.budgetItemGroupService.getById(id));
     }
 
     /**
@@ -58,8 +58,8 @@ public class BudgetItemGroupController {
      * @return 新增结果
      */
     @PostMapping
-    public Result insert(@RequestBody BudgetItemGroup budgetItemGroup) {
-        return new Result(200, "执行成功", this.budgetItemGroupService.save(budgetItemGroup));
+    public Result create(@RequestBody BudgetItemGroup budgetItemGroup) {
+        return Result.success(this.budgetItemGroupService.save(budgetItemGroup));
     }
 
     /**
@@ -70,7 +70,7 @@ public class BudgetItemGroupController {
      */
     @PutMapping
     public Result update(@RequestBody BudgetItemGroup budgetItemGroup) {
-        return new Result(200, "执行成功", this.budgetItemGroupService.updateById(budgetItemGroup));
+        return Result.success(this.budgetItemGroupService.updateById(budgetItemGroup));
     }
 
     /**
@@ -81,6 +81,6 @@ public class BudgetItemGroupController {
      */
     @DeleteMapping
     public Result deleteByIds(@RequestParam("idList") List<Integer> idList) {
-        return new Result(200, "执行成功", this.budgetItemGroupService.removeByIds(idList));
+        return Result.success(this.budgetItemGroupService.removeByIds(idList));
     }
 }

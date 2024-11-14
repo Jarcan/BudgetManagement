@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
  * @since 2024-11-13
  */
 @RestControllerAdvice
-@ResponseBody
 public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
@@ -40,7 +39,7 @@ public class GlobalExceptionHandler {
                 .map(error -> ((FieldError) error).getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.toList());
         logger.error("校验失败: {}", errors);
-        return Result.error(errors.toString());
+        return Result.fail(errors.toString());
     }
 
     /**
@@ -52,6 +51,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public Result handleException(Exception e) {
         logger.error("错误: ", e);
-        return Result.error(e.getMessage());
+        return Result.error("服务器内部异常");
     }
 }

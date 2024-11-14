@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -120,24 +121,28 @@ public class BudgetCost implements Serializable {
      * 期初金额（现金）
      */
     @TableField(value = "initial_amount_cash")
+    @DecimalMin(value = "0", message = "期初金额（现金）不能小于0")
     private BigDecimal initialAmountCash;
 
     /**
      * 可用余额（现金）
      */
     @TableField(value = "available_balance_cash")
+    @DecimalMin(value = "0", message = "可用余额（现金）不能小于0")
     private BigDecimal availableBalanceCash;
 
     /**
      * 期初金额（物料）
      */
     @TableField(value = "initial_amount_material")
+    @DecimalMin(value = "0", message = "期初金额（物料）不能小于0")
     private BigDecimal initialAmountMaterial;
 
     /**
      * 可用余额（物料）
      */
     @TableField(value = "available_balance_material")
+    @DecimalMin(value = "0", message = "可用余额（物料）不能小于0")
     private BigDecimal availableBalanceMaterial;
 
     /**

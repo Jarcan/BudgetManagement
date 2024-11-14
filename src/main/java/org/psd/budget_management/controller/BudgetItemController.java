@@ -35,9 +35,9 @@ public class BudgetItemController {
      * @param budgetItem 查询实体
      * @return 所有数据
      */
-    @GetMapping
-    public Result findByPage(Page<BudgetItem> page, BudgetItem budgetItem) {
-        return new Result(200, "执行成功", this.budgetItemService.page(page, new QueryWrapper<>(budgetItem)));
+    @GetMapping("findByConditions")
+    public Result findByConditions(Page<BudgetItem> page, BudgetItem budgetItem) {
+        return Result.success(this.budgetItemService.page(page, new QueryWrapper<>(budgetItem)));
     }
 
     /**
@@ -48,7 +48,7 @@ public class BudgetItemController {
      */
     @GetMapping("{id}")
     public Result findById(@PathVariable Serializable id) {
-        return new Result(200, "执行成功", this.budgetItemService.getById(id));
+        return Result.success(this.budgetItemService.getById(id));
     }
 
     /**
@@ -58,8 +58,8 @@ public class BudgetItemController {
      * @return 新增结果
      */
     @PostMapping
-    public Result insert(@Valid @RequestBody BudgetItem budgetItem) {
-        return new Result(200, "执行成功", this.budgetItemService.save(budgetItem));
+    public Result create(@Valid @RequestBody BudgetItem budgetItem) {
+        return Result.success(this.budgetItemService.save(budgetItem));
     }
 
     /**
@@ -70,7 +70,7 @@ public class BudgetItemController {
      */
     @PutMapping
     public Result update(@RequestBody BudgetItem budgetItem) {
-        return new Result(200, "执行成功", this.budgetItemService.updateById(budgetItem));
+        return Result.success(this.budgetItemService.updateById(budgetItem));
     }
 
     /**
@@ -81,7 +81,7 @@ public class BudgetItemController {
      */
     @PutMapping("status")
     public Result updateStatus(@RequestParam("idList") List<Integer> idList, @RequestParam("status") Integer status) {
-        return new Result(200, "执行成功", this.budgetItemService.updateStatus(idList, status));
+        return Result.success(this.budgetItemService.updateStatus(idList, status));
     }
 
     /**
@@ -92,6 +92,6 @@ public class BudgetItemController {
      */
     @DeleteMapping
     public Result deleteByIds(@RequestParam("idList") List<Integer> idList) {
-        return new Result(200, "执行成功", this.budgetItemService.removeByIds(idList));
+        return Result.success(this.budgetItemService.removeByIds(idList));
     }
 }
