@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -34,6 +35,7 @@ public class BudgetItem implements Serializable {
      * 预算科目名称
      */
     @TableField(value = "name")
+    @NotNull(message = "预算科目名称不能为空")
     private String name;
 
     /**
@@ -52,6 +54,7 @@ public class BudgetItem implements Serializable {
      * 控制类型
      */
     @TableField(value = "control_type")
+    @NotNull(message = "控制类型不能为空")
     private String controlType;
 
     /**

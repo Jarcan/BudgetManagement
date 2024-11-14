@@ -70,15 +70,24 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
      * @return 是否成功
      */
     @Override
-    public boolean save(BudgetCost entity) {
+    public Result create(BudgetCost entity) {
+        // 数据校验
+        try {
+            validateBudgetCost(entity);
+        } catch (IllegalArgumentException e) {
+            log.error("数据校验失败：" + e.getMessage());
+            return Result.fail(e.getMessage());
+        }
         boolean result = super.save(entity);
         if (result) {
             // 添加预算费用编码，前两位为SRYS，后四位为自增id
             entity.setCode("SRYS" + String.format("%04d", entity.getId()));
+            // 设置预算费用状态为1，表示已创建
             entity.setStatus(1);
             // 设置余额
             entity.setAvailableBalanceCash(entity.getInitialAmountCash() != null ? entity.getInitialAmountCash() : BigDecimal.ZERO);
             entity.setAvailableBalanceMaterial(entity.getInitialAmountMaterial() != null ? entity.getInitialAmountMaterial() : BigDecimal.ZERO);
+            // 更新数据库中的预算费用信息
             super.updateById(entity);
             // 获取最新的BudgetCost对象
             entity = this.getById(entity);
@@ -101,7 +110,93 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
                 addBudgetCostDetails(entity, "期初", "管理员", "追加", entity.getInitialAmountMaterial(), "物料", null);
             }
         }
-        return result;
+        return Result.success(true);
+    }
+
+    /**
+     * 校验预算费用数据
+     *
+     * @param budgetCost 预算费用
+     */
+    private void validateBudgetCost(BudgetCost budgetCost) {
+        switch (budgetCost.getType()) {
+            case "部门预算":
+                validateDepartmentBudget(budgetCost);
+                break;
+            case "客户预算":
+                validateCustomerBudget(budgetCost);
+                break;
+            case "渠道预算":
+                validateChannelBudget(budgetCost);
+                break;
+            case "门店预算":
+                validateStoreBudget(budgetCost);
+                break;
+            default:
+                throw new IllegalArgumentException("预算费用类型错误");
+        }
+    }
+
+    /**
+     * 校验部门预算数据
+     *
+     * @param budgetCost 预算费用
+     */
+    private void validateDepartmentBudget(BudgetCost budgetCost) {
+        if (budgetCost.getOrganization() == null) {
+            throw new IllegalArgumentException("组织不能为空");
+        }
+        if (budgetCost.getInitialAmountCash() == null) {
+            throw new IllegalArgumentException("期初金额（现金）不能为空");
+        }
+    }
+
+    /**
+     * 校验客户预算数据
+     *
+     * @param budgetCost 预算费用
+     */
+    private void validateCustomerBudget(BudgetCost budgetCost) {
+        if (budgetCost.getCustomer() == null) {
+            throw new IllegalArgumentException("客户不能为空");
+        }
+        if (budgetCost.getInitialAmountCash() == null && budgetCost.getInitialAmountMaterial() == null) {
+            throw new IllegalArgumentException("期初金额（现金）和期初金额（物料）不能同时为空");
+        }
+    }
+
+    /**
+     * 校验渠道预算数据
+     *
+     * @param budgetCost 预算费用
+     */
+    private void validateChannelBudget(BudgetCost budgetCost) {
+        if (budgetCost.getChannel() == null) {
+            throw new IllegalArgumentException("渠道不能为空");
+        }
+        if (budgetCost.getOrganization() != null) {
+            throw new IllegalArgumentException("组织不能为空");
+        }
+        if (budgetCost.getInitialAmountCash() == null && budgetCost.getInitialAmountMaterial() == null) {
+            throw new IllegalArgumentException("期初金额（现金）和期初金额（物料）不能同时为空");
+        }
+    }
+
+    /**
+     * 校验门店预算数据
+     *
+     * @param budgetCost 预算费用
+     */
+    private void validateStoreBudget(BudgetCost budgetCost) {
+        if (budgetCost.getStore() == null) {
+            throw new IllegalArgumentException("门店不能为空");
+        }
+        if (budgetCost.getCustomer() == null) {
+            throw new IllegalArgumentException("客户不能为空");
+        }
+        if (budgetCost.getInitialAmountCash() == null) {
+            throw new IllegalArgumentException("期初金额（现金）不能为空");
+        }
     }
 
     /**
@@ -281,17 +376,17 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
     public Result adjust(Integer budgetCostId, Integer targetBudgetCostId, String budgetCostType, BigDecimal amount, String description) {
         // 输入验证
         if (budgetCostId == null || targetBudgetCostId == null || budgetCostType == null || amount == null) {
-            return new Result(400, "输入参数不能为空", false);
+            return Result.fail("输入参数不能为空");
         }
         // 检查变更金额是否为负数
-        if (amount.compareTo(BigDecimal.ZERO) < 0) {
-            return new Result(400, "金额不能为负数", false);
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return Result.fail("金额不能为负数或0");
         }
         // 根据ID获取预算费用对象和目标对象
         BudgetCost budgetCost = this.getById(budgetCostId);
         BudgetCost targetBudgetCost = this.getById(targetBudgetCostId);
         if (budgetCost == null || targetBudgetCost == null) {
-            return new Result(404, "预算费用或目标预算费用不存在", false);
+            return Result.fail("预算费用或目标预算费用不存在");
         }
         // 尝试进行预算费用调整
         try {
@@ -306,16 +401,14 @@ public class BudgetCostServiceImpl extends ServiceImpl<BudgetCostMapper, BudgetC
                     handleMaterialBudgetChange(targetBudgetCost, "追加", amount, "调入", description);
                     break;
                 default:
-                    return new Result(400, "不支持的预算类型", false);
+                    return Result.fail("不支持的预算类型");
             }
             // 更新预算费用记录
             this.updateById(budgetCost);
             this.updateById(targetBudgetCost);
-            return new Result(200, "预算费用调整成功", true);
+            return Result.success(true);
         } catch (IllegalArgumentException e) {
-            return new Result(400, e.getMessage(), false);
-        } catch (Exception e) {
-            return new Result(500, "系统错误: " + e.getMessage(), false);
+            return Result.fail(e.getMessage());
         }
     }
 

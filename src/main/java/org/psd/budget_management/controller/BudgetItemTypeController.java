@@ -34,9 +34,9 @@ public class BudgetItemTypeController {
      * @param budgetItemType 查询实体
      * @return 所有数据
      */
-    @GetMapping
-    public Result findByPage(Page<BudgetItemType> page, BudgetItemType budgetItemType) {
-        return new Result(200, "执行成功", this.budgetItemTypeService.page(page, new QueryWrapper<>(budgetItemType)));
+    @GetMapping("findByConditions")
+    public Result findByConditions(Page<BudgetItemType> page, BudgetItemType budgetItemType) {
+        return Result.success(this.budgetItemTypeService.page(page, new QueryWrapper<>(budgetItemType)));
     }
 
     /**
@@ -47,7 +47,7 @@ public class BudgetItemTypeController {
      */
     @GetMapping("{id}")
     public Result findById(@PathVariable Serializable id) {
-        return new Result(200, "执行成功", this.budgetItemTypeService.getById(id));
+        return Result.success(this.budgetItemTypeService.getById(id));
     }
 
     /**
@@ -57,8 +57,8 @@ public class BudgetItemTypeController {
      * @return 新增结果
      */
     @PostMapping
-    public Result insert(@RequestBody BudgetItemType budgetItemType) {
-        return new Result(200, "执行成功", this.budgetItemTypeService.save(budgetItemType));
+    public Result create(@RequestBody BudgetItemType budgetItemType) {
+        return Result.success(this.budgetItemTypeService.save(budgetItemType));
     }
 
     /**
@@ -69,7 +69,7 @@ public class BudgetItemTypeController {
      */
     @PutMapping
     public Result update(@RequestBody BudgetItemType budgetItemType) {
-        return new Result(200, "执行成功", this.budgetItemTypeService.updateById(budgetItemType));
+        return Result.success(this.budgetItemTypeService.updateById(budgetItemType));
     }
 
     /**
@@ -80,6 +80,6 @@ public class BudgetItemTypeController {
      */
     @DeleteMapping
     public Result deleteByIds(@RequestParam("idList") List<Integer> idList) {
-        return new Result(200, "执行成功", this.budgetItemTypeService.removeByIds(idList));
+        return Result.success(this.budgetItemTypeService.removeByIds(idList));
     }
 }

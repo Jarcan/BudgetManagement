@@ -9,6 +9,7 @@ import org.psd.budget_management.service.BudgetCostService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
@@ -35,9 +36,9 @@ public class BudgetCostController {
      * @param budgetCost 查询实体
      * @return 所有数据
      */
-    @GetMapping
-    public Result findByPage(Page<BudgetCost> page, BudgetCost budgetCost) {
-        return new Result(200, "执行成功", this.budgetCostService.page(page, new QueryWrapper<>(budgetCost)));
+    @GetMapping("findByConditions")
+    public Result findByConditions(Page<BudgetCost> page, BudgetCost budgetCost) {
+        return Result.success(this.budgetCostService.page(page, new QueryWrapper<>(budgetCost)));
     }
 
     /**
@@ -48,7 +49,7 @@ public class BudgetCostController {
      */
     @GetMapping("{id}")
     public Result findById(@PathVariable Serializable id) {
-        return new Result(200, "执行成功", this.budgetCostService.getById(id));
+        return Result.success(this.budgetCostService.getById(id));
     }
 
     /**
@@ -58,8 +59,8 @@ public class BudgetCostController {
      * @return 新增结果
      */
     @PostMapping
-    public Result insert(@RequestBody BudgetCost budgetCost) {
-        return new Result(200, "执行成功", this.budgetCostService.save(budgetCost));
+    public Result create(@Valid @RequestBody BudgetCost budgetCost) {
+        return this.budgetCostService.create(budgetCost);
     }
 
     /**
@@ -70,7 +71,7 @@ public class BudgetCostController {
      */
     @PutMapping
     public Result update(@RequestBody BudgetCost budgetCost) {
-        return new Result(200, "执行成功", this.budgetCostService.updateById(budgetCost));
+        return Result.success(this.budgetCostService.updateById(budgetCost));
     }
 
     /**
@@ -81,7 +82,7 @@ public class BudgetCostController {
      */
     @PutMapping("status")
     public Result updateStatus(@RequestParam("idList") List<Integer> idList, @RequestParam("status") Integer status) {
-        return new Result(200, "执行成功", this.budgetCostService.updateStatus(idList, status));
+        return Result.success(this.budgetCostService.updateStatus(idList, status));
     }
 
     /**
@@ -122,6 +123,6 @@ public class BudgetCostController {
      */
     @DeleteMapping
     public Result deleteByIds(@RequestParam("idList") List<Integer> idList) {
-        return new Result(200, "执行成功", this.budgetCostService.removeByIds(idList));
+        return Result.success(this.budgetCostService.removeByIds(idList));
     }
 }

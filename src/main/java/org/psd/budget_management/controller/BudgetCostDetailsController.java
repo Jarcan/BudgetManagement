@@ -34,9 +34,9 @@ public class BudgetCostDetailsController {
      * @param budgetCostDetails 查询实体
      * @return 所有数据
      */
-    @GetMapping
-    public Result findByPage(Page<BudgetCostDetails> page, BudgetCostDetails budgetCostDetails) {
-        return new Result(200, "执行成功", this.budgetCostDetailsService.page(page, new QueryWrapper<>(budgetCostDetails)));
+    @GetMapping("findByConditions")
+    public Result findByConditions(Page<BudgetCostDetails> page, BudgetCostDetails budgetCostDetails) {
+        return Result.success(this.budgetCostDetailsService.page(page, new QueryWrapper<>(budgetCostDetails)));
     }
 
     /**
@@ -47,7 +47,7 @@ public class BudgetCostDetailsController {
      */
     @GetMapping("{id}")
     public Result findById(@PathVariable Serializable id) {
-        return new Result(200, "执行成功", this.budgetCostDetailsService.getById(id));
+        return Result.success(this.budgetCostDetailsService.getById(id));
     }
 
     /**
@@ -58,7 +58,7 @@ public class BudgetCostDetailsController {
      */
     @GetMapping("/findByBudgetCostId/{budgetCostId}")
     public Result findByBudgetCostId(@PathVariable Integer budgetCostId) {
-        return new Result(200, "执行成功", this.budgetCostDetailsService.findByBudgetCostId(budgetCostId));
+        return Result.success(this.budgetCostDetailsService.findByBudgetCostId(budgetCostId));
     }
 
     /**
@@ -69,7 +69,7 @@ public class BudgetCostDetailsController {
      */
     @PostMapping
     public Result insert(@RequestBody BudgetCostDetails budgetCostDetails) {
-        return new Result(200, "执行成功", this.budgetCostDetailsService.save(budgetCostDetails));
+        return Result.success(this.budgetCostDetailsService.save(budgetCostDetails));
     }
 
     /**
@@ -80,7 +80,7 @@ public class BudgetCostDetailsController {
      */
     @PutMapping
     public Result update(@RequestBody BudgetCostDetails budgetCostDetails) {
-        return new Result(200, "执行成功", this.budgetCostDetailsService.updateById(budgetCostDetails));
+        return Result.success(this.budgetCostDetailsService.updateById(budgetCostDetails));
     }
 
     /**
@@ -91,6 +91,6 @@ public class BudgetCostDetailsController {
      */
     @DeleteMapping
     public Result deleteByIds(@RequestParam("idList") List<Long> idList) {
-        return new Result(200, "执行成功", this.budgetCostDetailsService.removeByIds(idList));
+        return Result.success(this.budgetCostDetailsService.removeByIds(idList));
     }
 }
